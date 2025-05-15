@@ -1,22 +1,19 @@
 import os
 import numpy as np
-import pandas as pd
 import glob
-from essentia.standard import MonoLoader  # outputs mono audio signal
-import fire
+import librosa
 import tqdm
 
 def get_npy(fn):
     fs = 16000
-    loader = MonoLoader(filename=fn, sampleRate=fs)
-    x = loader()
+    x, _ = librosa.load(fn, sr=fs, mono=True)
     return x
 
 def main():
     fs = 16000
     data_path = "./"
     files = glob.glob(os.path.join(data_path, 'FSL10K', 'audio', 'wav', '*.wav'))
-    npy_path = os.path.join(data_path, 'data_npy')  
+    npy_path = os.path.join(data_path, 'data_npy')
     if not os.path.exists(npy_path):
         os.makedirs(npy_path)
 
@@ -37,7 +34,7 @@ def main():
                     # some audio files are broken
                     print(fn)
                     continue
-                
-                
+
+
 if __name__ == ("__main__"):
     main()

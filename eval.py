@@ -65,9 +65,12 @@ class Predict(object):
             self.model.cuda()
 
     def load(self, filename):
-        S = torch.load(filename)
+        if self.is_cuda:
+            S = torch.load(filename)
+        else:
+            S = torch.load(filename, map_location=torch.device('cpu'))
         self.model.load_state_dict(S)
-        print(self.model.hstft.bw_Q)
+        # print(self.model.hstft.bw_Q)
 
     def to_var(self, x):
         if torch.cuda.is_available():
@@ -81,7 +84,7 @@ class Predict(object):
         # load audio
         raw_path = os.path.join(self.data_path, 'npy_full', fn.split('.')[0]+'.npy')
         raw = np.load(raw_path, mmap_mode='r')
-        
+
         if len(raw) < self.input_length:
             nnpy = np.zeros(self.input_length)
             ri = int(np.floor(np.random.random(1) * (self.input_length - len(raw))))
@@ -141,7 +144,7 @@ class Predict(object):
 
             # forward
             prd = self.forward(x)
-            
+
             # estimated
             estimated = np.array(prd).mean(axis=0)
             est_array.append(estimated)
@@ -153,7 +156,7 @@ class Predict(object):
         # get roc_auc and pr_auc
         self.get_auc(est_array, gt_array)
         self.get_f1(est_array, gt_array)
-        
+
 
     def evaluate_singleclass(self, num_chunks=16):
         from data_loader.keyword_loader import get_audio_loader
